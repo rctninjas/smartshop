@@ -1,0 +1,19 @@
+{
+  "name": "@smartshop/utils",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "echo \"utils package: no dev server\"",
+    "build": "tsc --noEmit",
+    "lint": "echo \"utils package: no lint\"",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"utils package: no tests\""
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

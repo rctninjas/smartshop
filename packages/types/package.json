@@ -1,0 +1,19 @@
+{
+  "name": "@smartshop/types",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "echo \"types package: no dev server\"",
+    "build": "tsc --noEmit",
+    "lint": "echo \"types package: no lint\"",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"types package: no tests\""
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@smartshop/config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint/base": "./eslint/base.cjs",
+    "./prettier/base": "./prettier/base.cjs",
+    "./tsconfig/base": "./tsconfig/base.json"
+  },
+  "scripts": {
+    "build": "echo \"config package: no build\"",
+    "lint": "echo \"config package: no lint\"",
+    "typecheck": "echo \"config package: no typecheck\"",
+    "test": "echo \"config package: no tests\""
+  }
+}

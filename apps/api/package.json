@@ -1,0 +1,27 @@
+{
+  "name": "@smartshop/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"api: no tests yet\""
+  },
+  "dependencies": {
+    "@smartshop/types": "workspace:*",
+    "@smartshop/utils": "workspace:*",
+    "fastify": "^5.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@types/node": "^22.13.9",
+    "eslint": "^9.22.0",
+    "tsx": "^4.19.3",
+    "typescript-eslint": "^8.26.1",
+    "typescript": "^5.8.2"
+  }
+}
