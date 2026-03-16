@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { parseNumber } from '../../_lib/parsers';
 import { upstreamJson } from '../../_lib/upstream';
+import { redirectRelative } from '../../../_lib/redirect';
 
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -16,8 +16,8 @@ export async function POST(request: Request) {
   });
 
   if (!response.ok) {
-    return NextResponse.redirect(new URL('/admin/categories/new?error=1', request.url));
+    return redirectRelative('/admin/categories/new?error=1');
   }
 
-  return NextResponse.redirect(new URL('/admin/categories?created=1', request.url));
+  return redirectRelative('/admin/categories?created=1');
 }

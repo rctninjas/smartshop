@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server';
 import { upstreamJson } from '../../_lib/upstream';
+import { redirectRelative } from '../../../_lib/redirect';
 
 export async function POST(request: Request) {
   const formData = await request.formData();
   const id = String(formData.get('id') ?? '');
   if (!id) {
-    return NextResponse.redirect(new URL('/admin/categories?error=1', request.url));
+    return redirectRelative('/admin/categories?error=1');
   }
 
   const response = await upstreamJson(request, `/api/categories/${id}`, {
@@ -13,8 +13,8 @@ export async function POST(request: Request) {
   });
 
   if (!response.ok) {
-    return NextResponse.redirect(new URL('/admin/categories?error=1', request.url));
+    return redirectRelative('/admin/categories?error=1');
   }
 
-  return NextResponse.redirect(new URL('/admin/categories?deleted=1', request.url));
+  return redirectRelative('/admin/categories?deleted=1');
 }

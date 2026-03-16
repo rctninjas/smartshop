@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
 import { parseNumber } from '../../_lib/parsers';
 import { upstreamJson } from '../../_lib/upstream';
+import { redirectRelative } from '../../../_lib/redirect';
 
 export async function POST(request: Request) {
   const formData = await request.formData();
   const id = String(formData.get('id') ?? '');
   if (!id) {
-    return NextResponse.redirect(new URL('/admin/categories?error=1', request.url));
+    return redirectRelative('/admin/categories?error=1');
   }
 
   const parentIdValue = String(formData.get('parentId') ?? '').trim();
@@ -21,8 +21,8 @@ export async function POST(request: Request) {
   });
 
   if (!response.ok) {
-    return NextResponse.redirect(new URL(`/admin/categories/${id}?error=1`, request.url));
+    return redirectRelative(`/admin/categories/${id}?error=1`);
   }
 
-  return NextResponse.redirect(new URL(`/admin/categories/${id}?saved=1`, request.url));
+  return redirectRelative(`/admin/categories/${id}?saved=1`);
 }

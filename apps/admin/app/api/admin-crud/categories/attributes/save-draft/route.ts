@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server';
 import type { CategoryAttributeFieldDto } from '@smartshop/types';
 import { parseJsonArray } from '../../../_lib/parsers';
 import { upstreamJson } from '../../../_lib/upstream';
+import { redirectRelative } from '../../../../_lib/redirect';
 
 export async function POST(request: Request) {
   const formData = await request.formData();
   const categoryId = String(formData.get('categoryId') ?? '');
   if (!categoryId) {
-    return NextResponse.redirect(new URL('/admin/categories?error=1', request.url));
+    return redirectRelative('/admin/categories?error=1');
   }
 
   const fields = parseJsonArray<CategoryAttributeFieldDto>(formData.get('fields'));
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     method: 'POST'
   });
   if (!draftResponse.ok) {
-    return NextResponse.redirect(new URL(`/admin/categories/${categoryId}?error=1`, request.url));
+    return redirectRelative(`/admin/categories/${categoryId}?error=1`);
   }
 
   const updateResponse = await upstreamJson(request, `/api/categories/${categoryId}/attributes/schema/draft`, {
@@ -24,8 +24,8 @@ export async function POST(request: Request) {
     body: { fields }
   });
   if (!updateResponse.ok) {
-    return NextResponse.redirect(new URL(`/admin/categories/${categoryId}?error=1`, request.url));
+    return redirectRelative(`/admin/categories/${categoryId}?error=1`);
   }
 
-  return NextResponse.redirect(new URL(`/admin/categories/${categoryId}?draftSaved=1`, request.url));
+  return redirectRelative(`/admin/categories/${categoryId}?draftSaved=1`);
 }
