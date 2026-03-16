@@ -11,7 +11,7 @@
   - `3000` (storefront)
   - `3001` (admin)
   - `4000` (api)
-  - `5432` (postgres)
+  - `5452` (postgres, внешний порт)
 
 ## 1) Подготовка окружения
 
@@ -25,7 +25,7 @@ cp .env.example .env
 
 - `ADMIN_PORT=3001`
 - `API_PORT=4000`
-- `POSTGRES_PORT=5432`
+- `POSTGRES_PORT=5452`
 - `DATABASE_URL=postgresql://smartshop:smartshop@db:5432/smartshop?schema=public`
 - `NEXT_PUBLIC_API_URL=http://localhost:4000`
 - `API_INTERNAL_URL=http://api:4000`
@@ -93,7 +93,7 @@ docker compose logs --no-color --tail=100 api admin storefront
 - Admin: `http://localhost:3001/admin`
 - API: `http://localhost:4000`
 - Storefront: `http://localhost:3000`
-- PostgreSQL: `localhost:5432`
+- PostgreSQL: `localhost:5452` (внутри Docker-сети БД остается на `db:5432`)
 
 ## 5) Полезные команды
 
