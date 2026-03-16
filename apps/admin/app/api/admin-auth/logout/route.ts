@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     cache: 'no-store'
   });
 
-  const response = NextResponse.redirect(new URL('/login', request.url));
+  const response = NextResponse.redirect(new URL('/admin/login', request.url));
   const setCookieFn = (upstream.headers as Headers & { getSetCookie?: () => string[] }).getSetCookie;
   const setCookies = setCookieFn?.call(upstream.headers) ?? [];
 

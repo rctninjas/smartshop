@@ -14,6 +14,7 @@ This folder contains Nginx templates for HestiaCP with path-based routing:
 ## Important notes
 
 1. Admin app now uses `basePath: /admin`.
+   - Templates proxy both `/admin` and `/admin/*` directly to admin container (no forced nginx redirects).
 2. Keep admin internal handlers on the same domain:
    - `/api/admin-auth/*` -> admin container
    - `/api/admin-crud/*` -> admin container
