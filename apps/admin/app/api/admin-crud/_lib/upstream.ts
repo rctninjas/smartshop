@@ -13,13 +13,14 @@ export async function upstreamJson(
   }
 ) {
   const baseUrl = resolveApiBaseUrl();
+  const hasBody = options.body !== undefined;
   const response = await fetch(`${baseUrl}${path}`, {
     method: options.method,
     headers: {
-      'content-type': 'application/json',
+      ...(hasBody ? { 'content-type': 'application/json' } : {}),
       cookie: request.headers.get('cookie') ?? ''
     },
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: hasBody ? JSON.stringify(options.body) : undefined,
     cache: 'no-store'
   });
 
