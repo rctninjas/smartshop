@@ -35,14 +35,15 @@ cp .env.example .env
 
 ## 2) Запуск контейнеров
 
-В конфигурации используется отдельный init-сервис `deps`: он единственный выполняет `pnpm install`, после чего запускаются `api` и `admin`.
+В конфигурации используется отдельный init-сервис `deps`: он единственный выполняет `pnpm install`, после чего запускаются `api`, `admin` и `storefront`.
 `deps` пишет зависимости в общие тома:
 
 - `root_node_modules`
 - `api_node_modules`
 - `admin_node_modules`
+- `storefront_node_modules`
 
-Это гарантирует корректный cold start после `docker compose down -v` без ручных `pnpm install` в `api/admin`.
+Это гарантирует корректный cold start после `docker compose down -v` без ручных `pnpm install` в приложениях.
 
 ```bash
 docker compose up -d
@@ -54,26 +55,6 @@ docker compose up -d
 pnpm docker:up
 ```
 
-### Запуск storefront (витрины) через Docker
-
-На текущем этапе `storefront` не выделен в отдельный сервис `docker-compose.yml`, поэтому запускается как одноразовый контейнер через `deps`-образ и общие тома зависимостей.
-
-1) Убедитесь, что `deps`, `db` и `api` уже подняты:
-
-```bash
-docker compose up -d deps db api
-```
-
-2) Запустите витрину:
-
-```bash
-docker compose run --rm -p 3000:3000 deps sh -lc "corepack enable && pnpm --filter @smartshop/storefront dev --hostname 0.0.0.0 --port 3000"
-```
-
-3) Откройте:
-
-- `http://localhost:3000` — storefront
-
 ## 3) Проверка состояния
 
 ```bash
@@ -83,8 +64,7 @@ docker compose ps
 Ожидаемо:
 
 - `smartshop-deps` со статусом `exited (0)` (это нормальное поведение init-сервиса).
-- `smartshop-db`, `smartshop-api`, `smartshop-admin` в статусе `running`.
-- Для storefront отдельного long-running контейнера не будет при `docker compose run --rm` (это ожидаемо).
+- `smartshop-db`, `smartshop-api`, `smartshop-admin`, `smartshop-storefront` в статусе `running`.
 
 Проверка API health:
 
@@ -100,19 +80,19 @@ curl http://localhost:4000/health
 Проверка, что зависимости действительно поднялись автоматически:
 
 ```bash
-docker compose logs --no-color --tail=100 api admin
+docker compose logs --no-color --tail=100 api admin storefront
 ```
 
-В логах не должно быть ошибок:
+В логах не должно быть ошибок старта:
 
 - `next: not found`
 - `prisma: not found`
 
 ## 4) Доступ к сервисам
 
-- Admin: `http://localhost:3001`
+- Admin: `http://localhost:3001/admin`
 - API: `http://localhost:4000`
-- Storefront: `http://localhost:3000` (если запущен командой из раздела выше)
+- Storefront: `http://localhost:3000`
 - PostgreSQL: `localhost:5432`
 
 ## 5) Полезные команды
@@ -141,15 +121,14 @@ docker compose down -v
 docker compose down -v --remove-orphans
 docker compose up -d --build
 docker compose ps
-docker compose logs --tail=120 deps api admin db
+docker compose logs --tail=120 deps api admin storefront db
 ```
 
 Что делает этот набор:
 
 - Полностью удаляет контейнеры, сеть и volumes (включая данные PostgreSQL).
 - Пересобирает образы и поднимает сервисы заново.
-- Позволяет сразу проверить, что `deps` завершился успешно, а `api/admin/db` работают корректно.
-- После этого storefront запускается отдельно командой `docker compose run --rm ...` из раздела выше.
+- Позволяет сразу проверить, что `deps` завершился успешно, а `api/admin/storefront/db` работают корректно.
 
 ## 6) Частые проблемы
 
@@ -168,5 +147,5 @@ docker compose logs --tail=120 deps api admin db
   - проверьте `API_INTERNAL_URL` в `.env` (для SSR внутри контейнера `admin`).
 - Storefront не стартует:
   - проверьте, что `api` доступен по `http://localhost:4000/health`;
-  - перезапустите `deps`: `docker compose up -d deps`;
-  - заново выполните команду `docker compose run --rm -p 3000:3000 deps ...`.
+  - перезапустите сервис: `docker compose restart storefront`;
+  - проверьте логи: `docker compose logs --tail=120 storefront`.
