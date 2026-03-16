@@ -64,14 +64,14 @@ export function CatalogAdminTable({ items }: CatalogAdminTableProps) {
                 <Button asChild variant="ghost" size="sm">
                   <Link href={`/catalog/${item.id}`}>Редактировать</Link>
                 </Button>
-                <form action="/api/admin-crud/catalog/publish" method="post">
+                <form action="/admin/api/admin-crud/catalog/publish" method="post">
                   <input type="hidden" name="id" value={item.id} />
                   <input type="hidden" name="isPublished" value={item.isPublished ? 'false' : 'true'} />
                   <Button type="submit" variant="outline" size="sm">
                     {item.isPublished ? 'Снять с публикации' : 'Опубликовать'}
                   </Button>
                 </form>
-                <form action={`/api/admin-crud/catalog/delete?id=${item.id}`} method="post">
+                <form action={`/admin/api/admin-crud/catalog/delete?id=${item.id}`} method="post">
                   <input type="hidden" name="id" value={item.id} />
                   <Button type="submit" variant="destructive" size="sm">
                     Удалить

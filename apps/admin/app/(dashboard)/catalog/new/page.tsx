@@ -25,7 +25,7 @@ export default async function NewCatalogProductPage() {
       </div>
       <ProductForm
         mode="create"
-        action="/api/admin-crud/catalog/create"
+        action="/admin/api/admin-crud/catalog/create"
         categories={categories}
         activeSchemasByCategoryId={activeSchemasByCategoryId}
       />

@@ -39,7 +39,7 @@ export default async function CatalogProductPage({ params, searchParams }: Catal
         </div>
         <ProductForm
           mode="edit"
-          action="/api/admin-crud/catalog/update"
+          action="/admin/api/admin-crud/catalog/update"
           categories={categories}
           activeSchemasByCategoryId={activeSchemasByCategoryId}
           product={product}

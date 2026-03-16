@@ -79,13 +79,13 @@ export function AttributesSchemaEditor({ categoryId, schema }: AttributesSchemaE
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <form action="/api/admin-crud/categories/attributes/create-draft" method="post">
+        <form action="/admin/api/admin-crud/categories/attributes/create-draft" method="post">
           <input type="hidden" name="categoryId" value={categoryId} />
           <Button type="submit" variant="outline">
             Создать черновик
           </Button>
         </form>
-        <form action="/api/admin-crud/categories/attributes/publish" method="post">
+        <form action="/admin/api/admin-crud/categories/attributes/publish" method="post">
           <input type="hidden" name="categoryId" value={categoryId} />
           <Button type="submit">Опубликовать черновик</Button>
         </form>
@@ -156,7 +156,7 @@ export function AttributesSchemaEditor({ categoryId, schema }: AttributesSchemaE
         <Button type="button" variant="outline" onClick={addField}>
           Добавить поле
         </Button>
-        <form action="/api/admin-crud/categories/attributes/save-draft" method="post">
+        <form action="/admin/api/admin-crud/categories/attributes/save-draft" method="post">
           <input type="hidden" name="categoryId" value={categoryId} />
           <input type="hidden" name="fields" value={initialJson} />
           <Button type="submit" disabled={duplicateKeys.length > 0}>

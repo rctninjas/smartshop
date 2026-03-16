@@ -32,7 +32,7 @@ export function AdminShell({ children }: AdminShellProps) {
             ))}
           </ul>
         </nav>
-        <form action="/api/admin-auth/logout" method="post">
+        <form action="/admin/api/admin-auth/logout" method="post">
           <Button className="mt-4 w-full" variant="outline" type="submit">
             Выйти
           </Button>

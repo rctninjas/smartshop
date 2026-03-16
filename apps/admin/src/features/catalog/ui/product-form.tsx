@@ -241,7 +241,7 @@ export function ProductForm({ mode, action, categories, activeSchemasByCategoryI
       uploadForm.set('file', file);
 
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/admin-crud/catalog/upload-image');
+      xhr.open('POST', '/admin/api/admin-crud/catalog/upload-image');
       xhr.responseType = 'json';
 
       xhr.upload.onprogress = (event) => {

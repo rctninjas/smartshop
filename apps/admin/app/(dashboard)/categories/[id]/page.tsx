@@ -49,14 +49,14 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           <Button asChild variant="outline">
             <Link href="/categories">Назад к категориям</Link>
           </Button>
-          <form action="/api/admin-crud/categories/delete" method="post">
+          <form action="/admin/api/admin-crud/categories/delete" method="post">
             <input type="hidden" name="id" value={category.id} />
             <Button type="submit" variant="destructive">
               Удалить категорию
             </Button>
           </form>
         </div>
-        <CategoryForm action="/api/admin-crud/categories/update" rootCategories={rootCategories} category={category} />
+        <CategoryForm action="/admin/api/admin-crud/categories/update" rootCategories={rootCategories} category={category} />
         <AttributesSchemaEditor categoryId={category.id} schema={schema} />
       </main>
     );

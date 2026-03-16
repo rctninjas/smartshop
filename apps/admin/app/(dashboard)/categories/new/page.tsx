@@ -25,7 +25,7 @@ export default async function NewCategoryPage({ searchParams }: NewCategoryPageP
           <Link href="/categories">Назад к категориям</Link>
         </Button>
       </div>
-      <CategoryForm action="/api/admin-crud/categories/create" rootCategories={rootCategories} />
+      <CategoryForm action="/admin/api/admin-crud/categories/create" rootCategories={rootCategories} />
     </main>
   );
 }

@@ -21,7 +21,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/admin-auth/login', {
+      const response = await fetch('/admin/api/admin-auth/login', {
         method: 'POST',
         headers: {
           'content-type': 'application/json'

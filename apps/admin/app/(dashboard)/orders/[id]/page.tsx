@@ -70,7 +70,7 @@ export default async function OrderDetailsPage({ params, searchParams }: OrderDe
         <Card className="mb-5">
           <CardContent className="grid gap-3">
           <h2>Смена статуса</h2>
-          <form className="grid max-w-xl gap-3" action="/api/admin-crud/orders/status" method="post">
+          <form className="grid max-w-xl gap-3" action="/admin/api/admin-crud/orders/status" method="post">
             <input type="hidden" name="id" value={order.id} />
             <Label className="grid gap-1">
               Новый статус
