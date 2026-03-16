@@ -211,3 +211,46 @@ export type CustomerOrdersResponse = {
   customer: CustomerDto;
   orders: PaginatedResponse<OrderDto>;
 };
+
+export type StorefrontRegisterInput = {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  passwordConfirm: string;
+  consent: boolean;
+};
+
+export type StorefrontLoginPasswordInput = {
+  email: string;
+  password: string;
+};
+
+export type StorefrontLoginCodeRequestInput = {
+  email: string;
+};
+
+export type StorefrontLoginCodeVerifyInput = {
+  email: string;
+  code: string;
+};
+
+export type StorefrontCustomerDto = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+};
+
+export type StorefrontCheckoutItemInput = {
+  productId: string;
+  quantity: number;
+};
+
+export type StorefrontCheckoutInput = {
+  deliveryMethod: 'cdek' | 'russian_post';
+  deliveryAddress: string;
+  paymentMethod: 'on_receipt' | 'online';
+  items: StorefrontCheckoutItemInput[];
+  forcePaymentFailure?: boolean;
+};

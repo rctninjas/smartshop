@@ -1,7 +1,8 @@
-export function formatPrice(value: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatPrice(value: number, currency = 'RUB'): string {
+  return new Intl.NumberFormat('ru-RU', {
     style: 'currency',
     currency,
-    maximumFractionDigits: 2
-  }).format(value / 100);
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
 }

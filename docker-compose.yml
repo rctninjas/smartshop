@@ -8,6 +8,7 @@ services:
       - root_node_modules:/workspace/node_modules
       - api_node_modules:/workspace/apps/api/node_modules
       - admin_node_modules:/workspace/apps/admin/node_modules
+      - storefront_node_modules:/workspace/apps/storefront/node_modules
       - pnpm_store:/workspace/.pnpm-store
     command: >
       sh -c "corepack enable &&
@@ -86,9 +87,36 @@ services:
       sh -c "corepack enable &&
       pnpm --filter @smartshop/admin dev"
 
+  storefront:
+    image: node:22-alpine
+    container_name: smartshop-storefront
+    restart: unless-stopped
+    working_dir: /workspace
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+      api:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
+    ports:
+      - "${STOREFRONT_PORT:-3000}:3000"
+    volumes:
+      - ./:/workspace
+      - root_node_modules:/workspace/node_modules
+      - storefront_node_modules:/workspace/apps/storefront/node_modules
+      - pnpm_store:/workspace/.pnpm-store
+    command: >
+      sh -c "corepack enable &&
+      pnpm --filter @smartshop/storefront dev --hostname 0.0.0.0 --port 3000"
+
 volumes:
   postgres_data:
   root_node_modules:
   api_node_modules:
   admin_node_modules:
+  storefront_node_modules:
   pnpm_store:

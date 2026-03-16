@@ -1,3 +1,1 @@
-export const ordersFeature = {
-  name: 'orders'
-};
+export { CheckoutFlow } from './ui/checkout-flow';

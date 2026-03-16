@@ -142,3 +142,40 @@ model OrderStatusHistory {
 
   @@index([orderId, createdAt])
 }
+
+model CustomerAccount {
+  id            String            @id @default(cuid())
+  fullName      String
+  email         String            @unique
+  phone         String
+  passwordHash  String
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  sessions      CustomerSession[]
+  emailCodes    CustomerEmailCode[]
+}
+
+model CustomerSession {
+  id         String          @id @default(cuid())
+  accountId  String
+  account    CustomerAccount @relation(fields: [accountId], references: [id])
+  tokenHash  String          @unique
+  expiresAt  DateTime
+  createdAt  DateTime        @default(now())
+
+  @@index([accountId])
+  @@index([expiresAt])
+}
+
+model CustomerEmailCode {
+  id         String          @id @default(cuid())
+  accountId  String
+  account    CustomerAccount @relation(fields: [accountId], references: [id])
+  codeHash   String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime        @default(now())
+
+  @@index([accountId])
+  @@index([expiresAt])
+}
