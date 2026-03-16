@@ -53,7 +53,7 @@
   - bulk publish.
 - Добавить форму товара:
   - базовые поля, `itemNumber` (внутренний артикул, до 100 символов), `price` (текущая цена), `sale` (цена со скидкой, опционально), category, публикация,
-  - variants (`size/color/stock`), images (`url + sortOrder`).
+  - variants (`size/color/stock`), images (мультизагрузка + drag-and-drop + preview + хранение original/sm/medium).
 - На API: расширить DTO/валидацию payload для variants/images, унифицировать 4xx ответы.
 
 ## Этап 2: Categories full CRUD + tree operations

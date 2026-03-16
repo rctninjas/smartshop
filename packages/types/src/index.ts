@@ -43,7 +43,17 @@ export type ProductVariantDto = {
 export type ProductImageDto = {
   id: string;
   url: string;
+  originalUrl: string;
+  previewSmUrl: string;
+  previewMediumUrl: string;
   sortOrder: number;
+};
+
+export type ProductImageUploadDto = {
+  url: string;
+  originalUrl: string;
+  previewSmUrl: string;
+  previewMediumUrl: string;
 };
 
 export type ProductCreateInput = {
@@ -62,6 +72,9 @@ export type ProductCreateInput = {
   }>;
   images?: Array<{
     url: string;
+    originalUrl?: string;
+    previewSmUrl?: string;
+    previewMediumUrl?: string;
     sortOrder?: number;
   }>;
   attributesSnapshot?: Record<string, unknown>;

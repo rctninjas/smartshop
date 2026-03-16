@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import fastifyCookie from '@fastify/cookie';
+import fastifyMultipart from '@fastify/multipart';
 import {
   registerAuthModule,
   registerCatalogModule,
@@ -17,6 +18,12 @@ export function createApp() {
 
   app.register(fastifyCookie, {
     secret: process.env.ADMIN_SESSION_SECRET ?? 'change-me'
+  });
+  app.register(fastifyMultipart, {
+    limits: {
+      files: 10,
+      fileSize: 10 * 1024 * 1024
+    }
   });
 
   app.addHook('preHandler', async (request, reply) => {

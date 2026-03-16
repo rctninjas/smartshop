@@ -1,13 +1,18 @@
 import type { FastifyInstance } from 'fastify';
 import type {
   CategoryAttributeFieldDto,
+  ProductImageUploadDto,
   ProductBulkPublishInput,
   ProductCreateInput,
   ProductDto,
   ProductPublishInput,
   ProductUpdateInput
 } from '@smartshop/types';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { Prisma } from '@prisma/client';
+import sharp from 'sharp';
 import { prisma } from '../../lib/db.js';
 
 type CatalogListQuery = {
@@ -32,6 +37,9 @@ type ApiErrorResponse = {
   requestId: string;
 };
 
+const PRODUCT_IMAGES_DIR = path.resolve(process.cwd(), 'storage', 'products');
+const PRODUCT_IMAGES_PUBLIC_PREFIX = '/api/catalog/images/files';
+
 function toProductDto(product: {
   id: string;
   title: string;
@@ -55,6 +63,9 @@ function toProductDto(product: {
   images?: Array<{
     id: string;
     url: string;
+    originalUrl: string | null;
+    smUrl: string | null;
+    mediumUrl: string | null;
     sortOrder: number;
   }>;
   schemaVersion: number | null;
@@ -85,7 +96,10 @@ function toProductDto(product: {
     images: (product.images ?? [])
       .map((image) => ({
         id: image.id,
-        url: image.url,
+        url: normalizeImageUrl(image.url),
+        originalUrl: normalizeImageUrl(image.originalUrl ?? image.url),
+        previewSmUrl: normalizeImageUrl(image.smUrl ?? image.url),
+        previewMediumUrl: normalizeImageUrl(image.mediumUrl ?? image.url),
         sortOrder: image.sortOrder
       }))
       .sort((a, b) => a.sortOrder - b.sortOrder),
@@ -250,7 +264,124 @@ function validateProductItemNumber(itemNumber: string | undefined, requestId: st
   return null;
 }
 
+function buildImageUrl(fileName: string): string {
+  const explicitPublicUrl = process.env.API_PUBLIC_URL?.replace(/\/$/, '');
+  const fallbackPublicUrl = `http://localhost:${process.env.API_PORT ?? 4000}`;
+  const baseUrl = explicitPublicUrl || fallbackPublicUrl;
+  return `${baseUrl}${PRODUCT_IMAGES_PUBLIC_PREFIX}/${fileName}`;
+}
+
+function validateImageFileName(fileName: string): boolean {
+  return /^[a-z0-9-]+-(original|sm|medium)\.webp$/i.test(fileName);
+}
+
+function normalizeImageUrl(value: string): string {
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+  const explicitPublicUrl = process.env.API_PUBLIC_URL?.replace(/\/$/, '');
+  const fallbackPublicUrl = `http://localhost:${process.env.API_PORT ?? 4000}`;
+  const baseUrl = explicitPublicUrl || fallbackPublicUrl;
+  const pathPart = value.startsWith('/') ? value : `/${value}`;
+  return `${baseUrl}${pathPart}`;
+}
+
 export async function registerCatalogModule(app: FastifyInstance) {
+  app.post<{ Reply: ProductImageUploadDto | ApiErrorResponse }>(
+    '/catalog/images/upload',
+    async (request, reply) => {
+      const file = await request.file();
+      if (!file) {
+        return reply.code(400).send({
+          code: 'CATALOG_IMAGE_FILE_REQUIRED',
+          message: 'file is required',
+          requestId: request.id
+        });
+      }
+
+      if (!file.mimetype.startsWith('image/')) {
+        return reply.code(422).send({
+          code: 'CATALOG_IMAGE_INVALID_MIMETYPE',
+          message: 'Only image files are supported',
+          requestId: request.id
+        });
+      }
+
+      const sourceBuffer = await file.toBuffer();
+      if (!sourceBuffer.length) {
+        return reply.code(422).send({
+          code: 'CATALOG_IMAGE_EMPTY',
+          message: 'Uploaded image is empty',
+          requestId: request.id
+        });
+      }
+
+      try {
+        const imageId = randomUUID();
+        const originalFileName = `${imageId}-original.webp`;
+        const smFileName = `${imageId}-sm.webp`;
+        const mediumFileName = `${imageId}-medium.webp`;
+
+        await mkdir(PRODUCT_IMAGES_DIR, { recursive: true });
+
+        const originalBuffer = await sharp(sourceBuffer)
+          .rotate()
+          .resize({ width: 2000, fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 86 })
+          .toBuffer();
+        const smBuffer = await sharp(sourceBuffer)
+          .rotate()
+          .resize({ width: 320, fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toBuffer();
+        const mediumBuffer = await sharp(sourceBuffer)
+          .rotate()
+          .resize({ width: 768, fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 84 })
+          .toBuffer();
+
+        await Promise.all([
+          writeFile(path.resolve(PRODUCT_IMAGES_DIR, originalFileName), originalBuffer),
+          writeFile(path.resolve(PRODUCT_IMAGES_DIR, smFileName), smBuffer),
+          writeFile(path.resolve(PRODUCT_IMAGES_DIR, mediumFileName), mediumBuffer)
+        ]);
+
+        return reply.code(201).send({
+          url: buildImageUrl(originalFileName),
+          originalUrl: buildImageUrl(originalFileName),
+          previewSmUrl: buildImageUrl(smFileName),
+          previewMediumUrl: buildImageUrl(mediumFileName)
+        });
+      } catch {
+        return reply.code(422).send({
+          code: 'CATALOG_IMAGE_PROCESSING_FAILED',
+          message: 'Failed to process image',
+          requestId: request.id
+        });
+      }
+    }
+  );
+
+  app.get<{ Params: { fileName: string } }>('/catalog/images/files/:fileName', async (request, reply) => {
+    const fileName = request.params.fileName;
+    if (!validateImageFileName(fileName)) {
+      return reply.code(404).send();
+    }
+
+    const filePath = path.resolve(PRODUCT_IMAGES_DIR, fileName);
+    if (!filePath.startsWith(PRODUCT_IMAGES_DIR)) {
+      return reply.code(404).send();
+    }
+
+    try {
+      const content = await readFile(filePath);
+      reply.type('image/webp');
+      return reply.send(content);
+    } catch {
+      return reply.code(404).send();
+    }
+  });
+
   app.get<{ Querystring: CatalogListQuery; Reply: CatalogListResponse }>('/catalog', async (request) => {
     const page = Math.max(1, Number(request.query.page ?? 1));
     const pageSize = Math.min(100, Math.max(1, Number(request.query.pageSize ?? 20)));
@@ -375,6 +506,9 @@ export async function registerCatalogModule(app: FastifyInstance) {
         images: {
           create: (body.images ?? []).map((image) => ({
             url: image.url,
+            originalUrl: image.originalUrl ?? image.url,
+            smUrl: image.previewSmUrl ?? image.url,
+            mediumUrl: image.previewMediumUrl ?? image.url,
             sortOrder: image.sortOrder ?? 0
           }))
         }
@@ -495,6 +629,9 @@ export async function registerCatalogModule(app: FastifyInstance) {
                   images: {
                     create: images.map((image) => ({
                       url: image.url,
+                      originalUrl: image.originalUrl ?? image.url,
+                      smUrl: image.previewSmUrl ?? image.url,
+                      mediumUrl: image.previewMediumUrl ?? image.url,
                       sortOrder: image.sortOrder ?? 0
                     }))
                   }

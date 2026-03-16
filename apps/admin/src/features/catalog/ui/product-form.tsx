@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import type {
   CategoryAttributeFieldDto,
   CategoryAttributeSchemaDto,
   CategoryDto,
+  ProductImageUploadDto,
   ProductDto
 } from '@smartshop/types';
 import { Alert } from '../../../shared/ui/alert';
@@ -35,6 +37,14 @@ type ProductFormValues = {
 
 type ProductFormField = keyof ProductFormValues;
 type ProductFormErrors = Partial<Record<ProductFormField, string>>;
+
+type ProductFormImage = {
+  url: string;
+  originalUrl: string;
+  previewSmUrl: string;
+  previewMediumUrl: string;
+  sortOrder: number;
+};
 
 function toPrettyJson(value: unknown): string {
   return JSON.stringify(value, null, 2);
@@ -75,17 +85,24 @@ export function ProductForm({ mode, action, categories, activeSchemasByCategoryI
       })) ?? []
     )
   );
-  const [imagesText, setImagesText] = useState(
-    toPrettyJson(
-      product?.images.map((image) => ({
+  const [images, setImages] = useState<ProductFormImage[]>(
+    product?.images
+      .map((image) => ({
         url: image.url,
+        originalUrl: image.originalUrl,
+        previewSmUrl: image.previewSmUrl,
+        previewMediumUrl: image.previewMediumUrl,
         sortOrder: image.sortOrder
-      })) ?? []
-    )
+      }))
+      .sort((a, b) => a.sortOrder - b.sortOrder) ?? []
   );
   const [fieldErrors, setFieldErrors] = useState<ProductFormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadProgressPercent, setUploadProgressPercent] = useState<number | null>(null);
+  const [isImageDropActive, setIsImageDropActive] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
   const activeSchema = activeSchemasByCategoryId[values.categoryId];
   const activeFields = useMemo(() => activeSchema?.fields ?? [], [activeSchema]);
 
@@ -215,6 +232,135 @@ export function ProductForm({ mode, action, categories, activeSchemasByCategoryI
     }
   }
 
+  function uploadSingleImage(
+    file: File,
+    onProgress: (loadedBytes: number) => void
+  ): Promise<ProductImageUploadDto> {
+    return new Promise((resolve, reject) => {
+      const uploadForm = new FormData();
+      uploadForm.set('file', file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/admin-crud/catalog/upload-image');
+      xhr.responseType = 'json';
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          onProgress(event.loaded);
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error('Не удалось загрузить изображение.'));
+      };
+
+      xhr.onload = () => {
+        const payload = (xhr.response ?? {}) as { ok?: boolean; image?: ProductImageUploadDto; message?: string };
+        if (xhr.status >= 200 && xhr.status < 300 && payload.ok !== false && payload.image) {
+          onProgress(file.size);
+          resolve(payload.image);
+          return;
+        }
+        reject(new Error(payload.message ?? 'Не удалось загрузить изображение.'));
+      };
+
+      xhr.send(uploadForm);
+    });
+  }
+
+  async function uploadSelectedImages(selectedFiles: File[]) {
+    if (!selectedFiles.length) {
+      return;
+    }
+
+    setFormError(null);
+    setIsUploadingImages(true);
+    setUploadProgressPercent(0);
+    try {
+      const uploaded: ProductImageUploadDto[] = [];
+      const totalBytes = selectedFiles.reduce((sum, file) => sum + file.size, 0);
+      let completedBytes = 0;
+      let currentFileLoadedBytes = 0;
+
+      for (const file of selectedFiles) {
+        currentFileLoadedBytes = 0;
+        const uploadedItem = await uploadSingleImage(file, (loadedBytes) => {
+          currentFileLoadedBytes = Math.max(currentFileLoadedBytes, loadedBytes);
+          if (totalBytes > 0) {
+            const percent = Math.min(
+              100,
+              Math.round(((completedBytes + currentFileLoadedBytes) / totalBytes) * 100)
+            );
+            setUploadProgressPercent(percent);
+          }
+        });
+        completedBytes += file.size;
+        uploaded.push(uploadedItem);
+        if (totalBytes > 0) {
+          const percent = Math.min(100, Math.round((completedBytes / totalBytes) * 100));
+          setUploadProgressPercent(percent);
+        }
+      }
+
+      setImages((current) => {
+        const next = [...current];
+        for (const uploadedItem of uploaded) {
+          next.push({
+            url: uploadedItem.url,
+            originalUrl: uploadedItem.originalUrl,
+            previewSmUrl: uploadedItem.previewSmUrl,
+            previewMediumUrl: uploadedItem.previewMediumUrl,
+            sortOrder: next.length
+          });
+        }
+        return next;
+      });
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Не удалось загрузить изображения.');
+    } finally {
+      setIsUploadingImages(false);
+      setUploadProgressPercent(null);
+    }
+  }
+
+  async function handleImageSelection(event: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    await uploadSelectedImages(selectedFiles);
+    event.target.value = '';
+  }
+
+  function handleImageDrop(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setIsImageDropActive(false);
+    const droppedFiles = Array.from(event.dataTransfer.files ?? []).filter((file) => file.type.startsWith('image/'));
+    void uploadSelectedImages(droppedFiles);
+  }
+
+  function handleImageDragOver(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+    setIsImageDropActive(true);
+  }
+
+  function handleImageDragLeave(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setIsImageDropActive(false);
+  }
+
+  function openImagePicker() {
+    if (!isUploadingImages) {
+      imageInputRef.current?.click();
+    }
+  }
+
+  function removeImage(index: number) {
+    setImages((current) =>
+      current
+        .filter((_, currentIndex) => currentIndex !== index)
+        .map((image, nextIndex) => ({ ...image, sortOrder: nextIndex }))
+    );
+  }
+
   useEffect(() => {
     if (!activeSchema) {
       setSchemaVersion('');
@@ -238,6 +384,7 @@ export function ProductForm({ mode, action, categories, activeSchemasByCategoryI
           {product ? <input type="hidden" name="id" value={product.id} /> : null}
           <input type="hidden" name="attributesSnapshot" value={JSON.stringify(attributesSnapshot)} />
           <input type="hidden" name="schemaVersion" value={schemaVersion === '' ? '' : String(schemaVersion)} />
+          <input type="hidden" name="images" value={JSON.stringify(images)} />
 
           {formError ? <Alert variant="destructive">{formError}</Alert> : null}
 
@@ -418,7 +565,7 @@ export function ProductForm({ mode, action, categories, activeSchemasByCategoryI
           <details className="rounded-lg border bg-white p-4">
             <summary>Расширенные данные (JSON)</summary>
             <p className="mt-2 text-sm text-slate-600">
-              Этот блок нужен для расширенного редактирования вариантов и изображений.
+              Этот блок нужен для расширенного редактирования вариантов.
             </p>
             <Label className="mt-3 grid gap-1">
               Варианты JSON
@@ -429,16 +576,70 @@ export function ProductForm({ mode, action, categories, activeSchemasByCategoryI
                 rows={8}
               />
             </Label>
-            <Label className="mt-3 grid gap-1">
-              Изображения JSON
-              <Textarea
-                name="images"
-                value={imagesText}
-                onChange={(event) => setImagesText(event.target.value)}
-                rows={6}
-              />
-            </Label>
           </details>
+
+          <section className="grid gap-3 rounded-lg border bg-white p-4">
+            <h3 className="text-base font-semibold">Изображения товара</h3>
+            <p className="text-sm text-slate-600">
+              Загрузите одну или несколько картинок. Для каждой автоматически создаются версии original, sm (320) и medium (768).
+            </p>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleImageSelection}
+              disabled={isUploadingImages}
+            />
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={openImagePicker}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  openImagePicker();
+                }
+              }}
+              onDrop={handleImageDrop}
+              onDragOver={handleImageDragOver}
+              onDragLeave={handleImageDragLeave}
+              className={`rounded-md border-2 border-dashed p-6 text-center text-sm transition ${
+                isImageDropActive ? 'border-slate-800 bg-slate-100' : 'border-slate-300 bg-slate-50'
+              } ${isUploadingImages ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+            >
+              Перетащите сюда одну или несколько фотографий или нажмите для выбора файлов
+            </div>
+            {isUploadingImages ? (
+              <p className="text-sm text-slate-600">
+                Загружаем изображения... {uploadProgressPercent ?? 0}%
+              </p>
+            ) : null}
+
+            {images.length ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {images.map((image, index) => (
+                  <div key={image.url} className="rounded-md border p-3">
+                    <Image
+                      src={image.previewSmUrl}
+                      alt={`Изображение ${index + 1}`}
+                      width={320}
+                      height={180}
+                      unoptimized
+                      className="mb-2 h-32 w-full rounded-md object-cover"
+                    />
+                    <p className="mb-2 text-xs text-slate-600">sortOrder: {image.sortOrder}</p>
+                    <Button type="button" variant="outline" size="sm" onClick={() => removeImage(index)}>
+                      Удалить
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Alert>Пока не загружено ни одного изображения.</Alert>
+            )}
+          </section>
 
           <Button type="submit" className="w-fit" disabled={isSubmitting}>
             {isSubmitting ? 'Сохраняем...' : mode === 'create' ? 'Создать товар' : 'Сохранить изменения'}

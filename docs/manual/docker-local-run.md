@@ -28,6 +28,7 @@ cp .env.example .env
 - `DATABASE_URL=postgresql://smartshop:smartshop@db:5432/smartshop?schema=public`
 - `NEXT_PUBLIC_API_URL=http://localhost:4000`
 - `API_INTERNAL_URL=http://api:4000`
+- `API_PUBLIC_URL=http://localhost:4000`
 - `ADMIN_LOGIN`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`
 
 ## 2) Запуск контейнеров
@@ -127,6 +128,9 @@ docker compose logs --tail=120 deps api admin db
 
 ## 6) Частые проблемы
 
+- Файлы изображений товаров:
+  - хранятся локально в `apps/api/storage/products`;
+  - каталог исключен из git и должен сохраняться только как runtime-данные.
 - Порт занят:
   - измените порт в `.env` и перезапустите `docker compose up -d`.
 - API не стартует из-за Prisma:

@@ -34,6 +34,10 @@
 - `categories`
 - `products`
 - `product_images`
+  - `url` (основной URL для отображения)
+  - `originalUrl` (оптимизированный original WebP)
+  - `smUrl` (превью 320)
+  - `mediumUrl` (превью 768)
 - `product_variants`
 - `stock_items`
 - `category_attribute_schemas`

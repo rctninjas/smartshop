@@ -67,6 +67,16 @@
 - `publishedBy: string | null`
 - `createdAt: string`
 - `updatedAt: string`
+- `images: ProductImageDto[]`
+
+`ProductImageDto`:
+
+- `id: string`
+- `url: string` (основной URL для отображения)
+- `originalUrl: string` (оптимизированный original WebP)
+- `previewSmUrl: string` (`sm`, ширина 320)
+- `previewMediumUrl: string` (`medium`, ширина 768)
+- `sortOrder: number`
 
 ### Endpoints (admin)
 
@@ -103,6 +113,13 @@
 - `POST /api/catalog/bulk/publish`
   - Body: `{ ids: string[]; isPublished: boolean }`
   - Response: `{ updated: number }`
+- `POST /api/catalog/images/upload`
+  - Body: `multipart/form-data` (`file`)
+  - Rule: принимаются только изображения
+  - Rule: генерируются версии `original`, `sm`, `medium` в формате WebP
+  - Response: `{ url, originalUrl, previewSmUrl, previewMediumUrl }`
+- `GET /api/catalog/images/files/:fileName`
+  - Response: бинарные данные изображения (`image/webp`)
 
 ### Endpoints (storefront read model)
 

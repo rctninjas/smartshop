@@ -20,7 +20,15 @@ export async function POST(request: Request) {
   const variants = parseJsonArray<Array<{ sku: string; color: string; size: string; stock?: number }>[number]>(
     formData.get('variants')
   );
-  const images = parseJsonArray<Array<{ url: string; sortOrder?: number }>[number]>(formData.get('images'));
+  const images = parseJsonArray<
+    Array<{
+      url: string;
+      originalUrl?: string;
+      previewSmUrl?: string;
+      previewMediumUrl?: string;
+      sortOrder?: number;
+    }>[number]
+  >(formData.get('images'));
   const attributesSnapshot = (() => {
     const raw = formData.get('attributesSnapshot');
     if (typeof raw !== 'string' || raw.trim() === '') {
