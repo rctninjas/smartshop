@@ -3,13 +3,19 @@
 ## Статус выполнения
 
 - Статус документа: `done`
-- Последнее обновление: `2026-03-15`
+- Последнее обновление: `2026-03-16`
 - Задачи:
   - [x] Зафиксировать способ аутентификации (session/JWT).
   - [x] Зафиксировать формат login/logout endpoint.
   - [x] Зафиксировать срок жизни сессии и refresh policy.
   - [x] Зафиксировать middleware для защиты admin routes.
   - [x] Зафиксировать требования к хранению секретов и cookie flags.
+
+## Статус реализации в коде
+
+- `done`: реализованы endpoints `POST /api/admin/auth/login`, `POST /api/admin/auth/logout`, `GET /api/admin/auth/me`.
+- `done`: включен cookie-based session (`HttpOnly`, `SameSite=Lax`, TTL по env).
+- `done`: write endpoints в API защищены preHandler middleware с проверкой admin session.
 
 ## Цель
 
@@ -28,6 +34,7 @@
 - Данные аутентификации не хранятся в presentation-компонентах.
 - Способ входа: логин/пароль, пароль задается через environment variables.
 - Модель сессии: cookie-based session.
+- Persistence/ORM в API: `Prisma 7` (`PostgreSQL`).
 
 ## ENV переменные (MVP)
 

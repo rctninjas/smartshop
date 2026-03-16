@@ -3,7 +3,7 @@
 ## Статус выполнения
 
 - Статус документа: `done`
-- Последнее обновление: `2026-03-15`
+- Последнее обновление: `2026-03-16`
 - Задачи:
   - [x] Зафиксировать полный OpenAPI-контракт для `catalog`.
   - [x] Зафиксировать полный OpenAPI-контракт для `categories`.
@@ -11,6 +11,12 @@
   - [x] Зафиксировать единый error response contract.
   - [x] Согласовать payload-формат пагинации/сортировки/фильтров.
   - [x] Зафиксировать контракт публикации товара (single + bulk).
+
+## Статус реализации в коде
+
+- `done`: `catalog` admin endpoints + storefront read endpoints.
+- `done`: `categories` tree + CRUD с бизнес-ограничениями.
+- `done`: `orders` endpoints + статусные переходы + валидация `trackNumber` + автоархив неоплаченных.
 
 ## Цель
 
@@ -46,11 +52,13 @@
 
 - `id: string`
 - `title: string`
+- `itemNumber: string` (внутренний артикул, максимум 100 символов)
 - `slug: string`
 - `categoryId: string`
 - `description: string`
 - `price: number`
-- `currency: string`
+- `sale: number | null`
+- `currency: 'RUB'`
 - `sizes: string[]`
 - `colors: string[]`
 - `attributes: Record<string, unknown>`
@@ -76,11 +84,15 @@
 - `GET /api/catalog/:id`
   - Response: `ProductDto`
 - `POST /api/catalog`
-  - Body (минимум): `title`, `slug`, `categoryId`, `price`, `currency`
+  - Body (минимум): `title`, `itemNumber`, `slug`, `categoryId`, `price`
+  - Rule: `currency` всегда фиксируется как `RUB` на API стороне
+  - Rule: `itemNumber` обязателен, длина `1..100`
+  - Rule: `sale` опционален; если передан, то должен быть `>= 0` и `<= price`
   - Rule: `isPublished=false` если поле не передано
   - Response: `201 ProductDto`
 - `PATCH /api/catalog/:id`
   - Body: частичное обновление полей `ProductDto`
+  - Rule: если `sale` передан, он валидируется как `>= 0` и `<= актуального price`
   - Response: `ProductDto`
 - `DELETE /api/catalog/:id`
   - Response: `204`

@@ -1,20 +1,16 @@
-:root {
-  color-scheme: light;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+@import "tailwindcss";
+
+@theme {
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
 }
 
-* {
-  box-sizing: border-box;
-}
+@layer base {
+  * {
+    @apply border-slate-200;
+  }
 
-body {
-  margin: 0;
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-main {
-  margin: 0 auto;
-  max-width: 960px;
-  padding: 24px;
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
 }

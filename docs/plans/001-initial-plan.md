@@ -10,16 +10,25 @@ isProject: false
 ## Статус выполнения
 
 - Статус документа: `in_progress`
-- Последнее обновление: `2026-03-15`
+- Последнее обновление: `2026-03-16`
 - Задачи:
   - [x] Зафиксировать общий scope первой итерации.
   - [x] Зафиксировать ключевые решения по MVP.
-  - [ ] Этап 1: Доменная модель и контракты.
-  - [ ] Этап 2: API модуль каталога.
-  - [ ] Этап 3: API модуль категорий.
-  - [ ] Этап 4: API модуль заказов.
-  - [ ] Этап 5: Админка.
+  - [x] Этап 1: Доменная модель и контракты.
+  - [x] Этап 2: API модуль каталога.
+  - [x] Этап 3: API модуль категорий.
+  - [x] Этап 4: API модуль заказов.
+  - [x] Этап 5: Админка.
   - [ ] Этап 6: Нефункциональные требования и стабилизация.
+
+## Фактический прогресс реализации
+
+- `done`: Базовая инфраструктура API (`Prisma 7`, `PostgreSQL`, Docker-baseline).
+- `done`: `catalog` API (CRUD, publish/unpublish, bulk publish, storefront visibility rules).
+- `done`: `categories` API (tree, CRUD, инварианты глубины 2 уровня, soft delete).
+- `done`: `orders` API и state machine (переходы статусов + автоархив + trackNumber validation).
+- `done`: Базовые admin UI-экраны для `catalog/categories/orders` с реальными API.
+- `in_progress`: Стабилизация — внедрен auth middleware для write endpoints + login/logout/me в API.
 
 ## Цель
 
@@ -44,7 +53,7 @@ isProject: false
 ## Связанные документы
 
 - [Технические требования](000-tech-requirements.md)
-- [Спецификация характеристик товаров по подкатегориям](002-product-attributes-schema.md)
+- [Спецификация характеристик товаров по категориям](002-product-attributes-schema.md)
 
 ## Что переиспользуем из текущего каркаса
 

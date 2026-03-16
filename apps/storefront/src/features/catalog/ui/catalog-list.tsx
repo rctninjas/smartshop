@@ -2,14 +2,14 @@ import { formatPrice } from '@smartshop/utils';
 import type { CatalogItemDto } from '@smartshop/types';
 
 const SAMPLE_ITEMS: CatalogItemDto[] = [
-  { id: 'sku-1', title: 'Starter Hoodie', price: 6990 },
-  { id: 'sku-2', title: 'Smart Bottle', price: 2590 }
+  { id: 'sku-1', title: 'Базовое худи', price: 6990 },
+  { id: 'sku-2', title: 'Умная бутылка', price: 2590 }
 ];
 
 export function CatalogList() {
   return (
     <section>
-      <h2>Catalog</h2>
+      <h2>Каталог</h2>
       <ul>
         {SAMPLE_ITEMS.map((item) => (
           <li key={item.id}>
