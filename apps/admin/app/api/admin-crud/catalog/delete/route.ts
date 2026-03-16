@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   const idFromQuery = requestUrl.searchParams.get('id')?.trim() ?? '';
   const id = idFromBody || idFromQuery;
   if (!id) {
-    return NextResponse.redirect(new URL('/catalog?error=1', request.url));
+    return NextResponse.redirect(new URL('/admin/catalog?error=1', request.url));
   }
 
   const response = await upstreamJson(request, `/api/catalog/${id}`, {
@@ -16,8 +16,8 @@ export async function POST(request: Request) {
   });
 
   if (!response.ok) {
-    return NextResponse.redirect(new URL('/catalog?error=1', request.url));
+    return NextResponse.redirect(new URL('/admin/catalog?error=1', request.url));
   }
 
-  return NextResponse.redirect(new URL('/catalog?deleted=1', request.url));
+  return NextResponse.redirect(new URL('/admin/catalog?deleted=1', request.url));
 }

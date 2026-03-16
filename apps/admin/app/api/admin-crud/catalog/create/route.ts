@@ -64,6 +64,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    redirectTo: '/catalog?created=1'
+    redirectTo: '/admin/catalog?created=1'
   });
 }

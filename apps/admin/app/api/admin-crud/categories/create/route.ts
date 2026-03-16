@@ -16,8 +16,8 @@ export async function POST(request: Request) {
   });
 
   if (!response.ok) {
-    return NextResponse.redirect(new URL('/categories/new?error=1', request.url));
+    return NextResponse.redirect(new URL('/admin/categories/new?error=1', request.url));
   }
 
-  return NextResponse.redirect(new URL('/categories?created=1', request.url));
+  return NextResponse.redirect(new URL('/admin/categories?created=1', request.url));
 }

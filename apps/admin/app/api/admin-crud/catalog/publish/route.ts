@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const id = String(formData.get('id') ?? '');
   if (!id) {
-    return NextResponse.redirect(new URL('/catalog?error=1', request.url));
+    return NextResponse.redirect(new URL('/admin/catalog?error=1', request.url));
   }
 
   const isPublished = parseBoolean(formData.get('isPublished'));
@@ -16,8 +16,8 @@ export async function POST(request: Request) {
   });
 
   if (!response.ok) {
-    return NextResponse.redirect(new URL('/catalog?error=1', request.url));
+    return NextResponse.redirect(new URL('/admin/catalog?error=1', request.url));
   }
 
-  return NextResponse.redirect(new URL('/catalog?saved=1', request.url));
+  return NextResponse.redirect(new URL('/admin/catalog?saved=1', request.url));
 }

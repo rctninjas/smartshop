@@ -77,6 +77,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    redirectTo: `/catalog/${id}?saved=1`
+    redirectTo: `/admin/catalog/${id}?saved=1`
   });
 }
