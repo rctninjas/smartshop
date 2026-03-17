@@ -3,7 +3,7 @@
 ## Статус выполнения
 
 - Статус документа: `done`
-- Последнее обновление: `2026-03-16`
+- Последнее обновление: `2026-03-17`
 - Задачи:
   - [x] Зафиксировать итоговый список таблиц/коллекций.
   - [x] Зафиксировать связи и ключи.
@@ -11,6 +11,7 @@
   - [x] Зафиксировать стратегию soft delete.
   - [x] Зафиксировать audit поля во всех доменных сущностях.
   - [x] Зафиксировать поля и индексы для управления публикацией товара.
+  - [x] Зафиксировать клиентские сущности регистрации/сессий (`customer_accounts`, `customer_sessions`, `customer_email_codes`).
 
 ## Статус реализации в коде
 
@@ -45,6 +46,9 @@
 - `orders`
 - `order_items`
 - `order_status_history`
+- `customer_accounts`
+- `customer_sessions`
+- `customer_email_codes`
 
 ## Концептуальные связи
 
@@ -57,6 +61,9 @@
 - `category_attribute_schemas` 1:N `category_attribute_fields`
 - `orders` 1:N `order_items`
 - `orders` 1:N `order_status_history`
+- `customer_accounts` 1:N `customer_sessions`
+- `customer_accounts` 1:N `customer_email_codes`
+- `orders.customerEmail` логически связан с `customer_accounts.email` (match by email, не FK)
 
 ## Обязательные технические поля
 
@@ -109,6 +116,21 @@
 - `order_status_history`
   - `orderId` FK
   - INDEX: `(orderId, createdAt)`
+- `customer_accounts`
+  - `id` PK
+  - `email` UNIQUE
+  - `fullName`, `phone`, `passwordHash`
+- `customer_sessions`
+  - `id` PK
+  - `accountId` FK -> `customer_accounts.id`
+  - `tokenHash` UNIQUE
+  - `expiresAt` INDEX
+- `customer_email_codes`
+  - `id` PK
+  - `accountId` FK -> `customer_accounts.id`
+  - `codeHash`
+  - `expiresAt` INDEX
+  - `usedAt` nullable
 
 ## Soft delete стратегия
 

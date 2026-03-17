@@ -3,11 +3,12 @@
 ## Статус выполнения
 
 - Статус документа: `done`
-- Последнее обновление: `2026-03-16`
+- Последнее обновление: `2026-03-17`
 - Задачи:
   - [x] Зафиксировать полный OpenAPI-контракт для `catalog`.
   - [x] Зафиксировать полный OpenAPI-контракт для `categories`.
   - [x] Зафиксировать полный OpenAPI-контракт для `orders`.
+  - [x] Зафиксировать контракт для `customers` (включая клиентов без заказов).
   - [x] Зафиксировать единый error response contract.
   - [x] Согласовать payload-формат пагинации/сортировки/фильтров.
   - [x] Зафиксировать контракт публикации товара (single + bulk).
@@ -17,6 +18,7 @@
 - `done`: `catalog` admin endpoints + storefront read endpoints.
 - `done`: `categories` tree + CRUD с бизнес-ограничениями.
 - `done`: `orders` endpoints + статусные переходы + валидация `trackNumber` + автоархив неоплаченных.
+- `done`: `customers` list/detail построены от `CustomerAccount`; клиенты видны в админке даже без заказов.
 
 ## Цель
 
@@ -24,7 +26,7 @@
 
 ## Scope
 
-- REST endpoints для доменов `catalog`, `categories`, `orders`.
+- REST endpoints для доменов `catalog`, `categories`, `orders`, `customers`.
 - Request/response DTO, HTTP-коды, ошибки, пагинация, фильтры, сортировки.
 
 ## Ключевые решения
@@ -194,6 +196,31 @@
   - Body: `{ status: OrderStatus; trackNumber?: string }`
   - Rule: `trackNumber` обязателен для `status=shipped`
   - Response: `OrderDto`
+
+## Клиенты
+
+### Customer DTO
+
+- `id: string`
+- `email: string`
+- `name: string`
+- `phone: string`
+- `ordersCount: number`
+- `totalSpent: number`
+- `lastOrderAt: string | null`
+
+### Endpoints
+
+- `GET /api/customers`
+  - Query:
+    - `page`, `pageSize`
+    - `search` (email/name/phone)
+  - Response: `PaginatedResponse<CustomerDto>`
+  - Rule: источник списка — `CustomerAccount`; клиент возвращается даже если заказов нет.
+  - Rule: метрики заказов (`ordersCount`, `totalSpent`, `lastOrderAt`) агрегируются из `orders`; при отсутствии заказов значения `0/0/null`.
+- `GET /api/customers/:email/orders`
+  - Response: `CustomerOrdersResponse`
+  - Rule: клиент ищется в `CustomerAccount`; при отсутствии заказов возвращается пустая пагинация заказов.
 
 ## Коды ответа (базово)
 
