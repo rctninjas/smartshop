@@ -13,7 +13,7 @@ export function CustomersTable({ items }: CustomersTableProps) {
       <Card>
         <CardContent className="p-6">
           <h3 className="mb-1 text-base font-semibold">Пока нет клиентов</h3>
-          <p className="text-sm text-slate-600">Клиенты появятся после оформления заказов.</p>
+          <p className="text-sm text-slate-600">Клиенты появятся после регистрации или оформления заказов.</p>
         </CardContent>
       </Card>
     );
